@@ -123,7 +123,7 @@ const HomePage = () => {
 
                 {/* Logo langsung tanpa container kotak */}
                 <img
-                  src="../../img/logo_hmpti.jpg"
+                  src="../../public/img/logo_hmpti.jpg"
                   alt="HMP-TI Logo"
                   className={`
                     w-80 h-80 object-contain transition-all duration-700 ease-out relative z-10

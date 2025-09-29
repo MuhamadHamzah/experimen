@@ -16,11 +16,11 @@ const Navigation = () => {
   }, []);
 
   const navItems = [
-    { path: "/", label: "Home", icon: Users },
-    { path: "/about", label: "About", icon: Info },
-    { path: "/events", label: "Events", icon: Calendar },
+    { path: "/", label: "Beranda", icon: Users },
+    { path: "/about", label: "Tentang", icon: Info },
+    { path: "/events", label: "Event", icon: Calendar },
     { path: "/gallery", label: "Gallery", icon: Image },
-    { path: "/contact", label: "Contact", icon: Phone },
+    { path: "/contact", label: "Kontak", icon: Phone },
   ];
 
   return (

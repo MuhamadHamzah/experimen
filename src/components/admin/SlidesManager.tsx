@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, Slide } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X } from 'lucide-react';
 import GlassCard from '../GlassCard';
 
 export default function SlidesManager() {

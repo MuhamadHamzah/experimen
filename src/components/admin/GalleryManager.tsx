@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, GalleryItem } from '../../lib/supabase';
-import { Edit2, Trash2, Save, X } from 'lucide-react';
+import { CreditCard as Edit2, Trash2, Save, X } from 'lucide-react';
 import GlassCard from '../GlassCard';
 
 export default function GalleryManager() {

@@ -8,6 +8,7 @@ import {
   Search,
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
+import { supabase, Event } from "../lib/supabase";
 
 // Definisikan tipe untuk event
 interface EventItem {
@@ -36,6 +37,7 @@ const EventsPage = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [dbEvents, setDbEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     const observerOptions = {
@@ -63,7 +65,23 @@ const EventsPage = () => {
     return () => observer.disconnect();
   }, [hasAnimated]);
 
-  const events: EventItem[] = [
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const { data } = await supabase
+        .from('events')
+        .select('*')
+        .eq('is_published', true)
+        .order('event_date', { ascending: false });
+
+      if (data && data.length > 0) {
+        setDbEvents(data);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const defaultEvents: EventItem[] = [
     {
       id: 1,
       title: "Workshop Pengembangan Web3",
@@ -129,6 +147,23 @@ const EventsPage = () => {
       tags: ["Keamanan Siber", "Privasi", "Pertahanan"],
     },
   ];
+
+  const events: EventItem[] = dbEvents.length > 0
+    ? dbEvents.map((event, index) => ({
+        id: index + 1,
+        title: event.title,
+        date: event.event_date.split('T')[0],
+        time: new Date(event.event_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        location: event.location,
+        category: "workshop" as const,
+        attendees: 0,
+        maxAttendees: 100,
+        description: event.description,
+        image: event.image_url,
+        status: "upcoming",
+        tags: [],
+      }))
+    : defaultEvents;
 
   const categories: CategoryItem[] = [
     { id: "all", label: "Semua Acara", count: events.length },

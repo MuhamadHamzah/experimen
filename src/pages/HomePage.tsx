@@ -10,6 +10,7 @@ import {
   Target,
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
+import { supabase, Slide } from "../lib/supabase";
 
 const HomePage = () => {
   const [logoHovered, setLogoHovered] = useState(false);
@@ -18,6 +19,7 @@ const HomePage = () => {
     rotateY: 0,
     scale: 1,
   });
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [desktopLogoTransform, setDesktopLogoTransform] = useState({
     rotateX: 0,
     rotateY: 0,
@@ -263,15 +265,32 @@ const HomePage = () => {
     },
   ];
 
-  // Gambar untuk slider
-  const sliderImages = [
-    "/public/img/dies.jpg",
-    "/public/img/semnas.jpg",
-    "/public/img/dies.jpg",
-    "/public/img/semnas.jpg",
-    "/public/img/dies.jpg",
-    "/public/img/semnas.jpg",
-  ];
+  useEffect(() => {
+    const fetchSlides = async () => {
+      const { data } = await supabase
+        .from('slides')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (data && data.length > 0) {
+        setSlides(data);
+      }
+    };
+
+    fetchSlides();
+  }, []);
+
+  const sliderImages = slides.length > 0
+    ? slides.map(slide => slide.image_url)
+    : [
+        "/public/img/dies.jpg",
+        "/public/img/semnas.jpg",
+        "/public/img/dies.jpg",
+        "/public/img/semnas.jpg",
+        "/public/img/dies.jpg",
+        "/public/img/semnas.jpg",
+      ];
 
   return (
     <div className="relative pt-16 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none]">

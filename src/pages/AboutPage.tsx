@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Users,
   Target,
@@ -10,9 +10,11 @@ import {
   Twitter,
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
+import { supabase, TeamMember } from "../lib/supabase";
 
 const AboutPage = () => {
   const headerRef = useRef<HTMLDivElement>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   useEffect(() => {
     const observerOptions = {
@@ -65,36 +67,59 @@ const AboutPage = () => {
     },
   ];
 
-  const team = [
-    {
-      name: "Pinkan Aprilia",
-      role: "Ketua Umum HMP-TI Angkatan 13",
-      image: "/img/team/pinkan.jpg",
-      bio: "Kata kata motivasi",
-      social: { github: "#", linkedin: "#", twitter: "#" },
-    },
-    {
-      name: "M. Fajar Hermawan",
-      role: "Wakil Ketua Umum HMP-TI Angkatan 13",
-      image: "/img/team/fajar.jpg",
-      bio: "Kata kata motivasi",
-      social: { github: "#", linkedin: "#", twitter: "#" },
-    },
-    {
-      name: "Muhammad Firdaus",
-      role: "Sekertaris Umum",
-      image: "/img/team/firdaus.jpg",
-      bio: "Kata kata motivasi",
-      social: { github: "#", linkedin: "#", twitter: "#" },
-    },
-    {
-      name: "Aprilia Firdayani",
-      role: "Bendahara Umum",
-      image: "/img/team/aprilia.jpg",
-      bio: "Kata kata motivasi",
-      social: { github: "#", linkedin: "#", twitter: "#" },
-    },
-  ];
+  useEffect(() => {
+    const fetchTeam = async () => {
+      const { data } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('order_index', { ascending: true });
+
+      if (data && data.length > 0) {
+        setTeamMembers(data);
+      }
+    };
+
+    fetchTeam();
+  }, []);
+
+  const team = teamMembers.length > 0
+    ? teamMembers.map(member => ({
+        name: member.name,
+        role: member.position,
+        image: member.photo_url,
+        bio: member.bio,
+        social: { github: "#", linkedin: "#", twitter: "#" },
+      }))
+    : [
+        {
+          name: "Pinkan Aprilia",
+          role: "Ketua Umum HMP-TI Angkatan 13",
+          image: "/img/team/pinkan.jpg",
+          bio: "Kata kata motivasi",
+          social: { github: "#", linkedin: "#", twitter: "#" },
+        },
+        {
+          name: "M. Fajar Hermawan",
+          role: "Wakil Ketua Umum HMP-TI Angkatan 13",
+          image: "/img/team/fajar.jpg",
+          bio: "Kata kata motivasi",
+          social: { github: "#", linkedin: "#", twitter: "#" },
+        },
+        {
+          name: "Muhammad Firdaus",
+          role: "Sekertaris Umum",
+          image: "/img/team/firdaus.jpg",
+          bio: "Kata kata motivasi",
+          social: { github: "#", linkedin: "#", twitter: "#" },
+        },
+        {
+          name: "Aprilia Firdayani",
+          role: "Bendahara Umum",
+          image: "/img/team/aprilia.jpg",
+          bio: "Kata kata motivasi",
+          social: { github: "#", linkedin: "#", twitter: "#" },
+        },
+      ];
 
   const stats = [
     { number: "50+", label: "Anggota Aktif" },

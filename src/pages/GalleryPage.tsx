@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Image, Play, Download, Heart, Eye, Calendar } from "lucide-react";
 import GlassCard from "../components/GlassCard";
+import { supabase, GalleryItem as DBGalleryItem } from "../lib/supabase";
 
 // Define interface for media items
 interface MediaItem {
@@ -26,6 +27,7 @@ const GalleryPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const [dbGalleryItems, setDbGalleryItems] = useState<DBGalleryItem[]>([]);
 
   useEffect(() => {
     const observerOptions = {
@@ -53,7 +55,22 @@ const GalleryPage = () => {
     return () => observer.disconnect();
   }, [hasAnimated]);
 
-  const mediaItems: MediaItem[] = [
+  useEffect(() => {
+    const fetchGalleryItems = async () => {
+      const { data } = await supabase
+        .from('gallery_items')
+        .select('*')
+        .order('order_index', { ascending: true });
+
+      if (data && data.length > 0) {
+        setDbGalleryItems(data);
+      }
+    };
+
+    fetchGalleryItems();
+  }, []);
+
+  const defaultMediaItems: MediaItem[] = [
     {
       id: 1,
       type: "image",
@@ -133,6 +150,21 @@ const GalleryPage = () => {
       likes: 234,
     },
   ];
+
+  const mediaItems: MediaItem[] = dbGalleryItems.length > 0
+    ? dbGalleryItems.map((item, index) => ({
+        id: index + 1,
+        type: "image" as const,
+        src: item.image_url,
+        thumbnail: item.image_url,
+        title: item.title,
+        description: item.description,
+        date: item.created_at.split('T')[0],
+        category: item.category as "events" | "workshops" | "community",
+        views: 0,
+        likes: 0,
+      }))
+    : defaultMediaItems;
 
   const categories: Category[] = [
     { id: "all", label: "Semua Media", count: mediaItems.length },

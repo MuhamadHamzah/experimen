@@ -9,9 +9,33 @@ import {
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
 
+// Definisikan tipe untuk event
+interface EventItem {
+  id: number;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  category: "workshop" | "bootcamp" | "networking" | "conference";
+  attendees: number;
+  maxAttendees: number;
+  description: string;
+  image: string;
+  status: string;
+  tags: string[];
+}
+
+// Definisikan tipe untuk kategori
+interface CategoryItem {
+  id: string;
+  label: string;
+  count: number;
+}
+
 const EventsPage = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
     const observerOptions = {
@@ -19,21 +43,27 @@ const EventsPage = () => {
       rootMargin: "0px 0px -50px 0px",
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !hasAnimated) {
           entry.target.classList.add("animate-slide-up");
+          setHasAnimated(true);
         }
       });
-    }, observerOptions);
+    };
+
+    const observer = new IntersectionObserver(
+      handleIntersection,
+      observerOptions
+    );
 
     const elements = document.querySelectorAll(".scroll-animate");
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, []);
+  }, [hasAnimated]);
 
-  const events = [
+  const events: EventItem[] = [
     {
       id: 1,
       title: "Workshop Pengembangan Web3",
@@ -100,7 +130,7 @@ const EventsPage = () => {
     },
   ];
 
-  const categories = [
+  const categories: CategoryItem[] = [
     { id: "all", label: "Semua Acara", count: events.length },
     {
       id: "workshop",
@@ -135,7 +165,7 @@ const EventsPage = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString("id-ID", {
       weekday: "long",
@@ -145,12 +175,31 @@ const EventsPage = () => {
     });
   };
 
+  const getCategoryLabel = (category: string): string => {
+    switch (category) {
+      case "workshop":
+        return "Workshop";
+      case "bootcamp":
+        return "Bootcamp";
+      case "networking":
+        return "Jaringan";
+      case "conference":
+        return "Konferensi";
+      default:
+        return category;
+    }
+  };
+
   return (
     <div className="min-h-screen pt-20 px-4 relative">
       {/* Header Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="scroll-animate opacity-0 translate-y-10">
+          <div
+            className={`scroll-animate opacity-0 translate-y-10 ${
+              hasAnimated ? "animate-slide-up" : ""
+            }`}
+          >
             <h1 className="text-5xl lg:text-7xl font-bold mb-8 leading-tight">
               <span className="bg-gradient-to-r from-electric-cyan via-neon-purple to-hot-pink bg-clip-text text-transparent">
                 Acara
@@ -170,7 +219,11 @@ const EventsPage = () => {
       {/* Filters and Search */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto">
-          <GlassCard className="p-8 scroll-animate opacity-0 translate-y-10">
+          <GlassCard
+            className={`p-8 scroll-animate opacity-0 translate-y-10 ${
+              hasAnimated ? "animate-slide-up" : ""
+            }`}
+          >
             <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
               {/* Search */}
               <div className="relative flex-1 max-w-md">
@@ -212,7 +265,9 @@ const EventsPage = () => {
             {filteredEvents.map((event) => (
               <GlassCard
                 key={event.id}
-                className="group overflow-hidden scroll-animate opacity-0 translate-y-10"
+                className={`group overflow-hidden scroll-animate opacity-0 translate-y-10 ${
+                  hasAnimated ? "animate-slide-up" : ""
+                }`}
               >
                 <div className="relative h-48 overflow-hidden rounded-t-3xl">
                   <img
@@ -222,13 +277,7 @@ const EventsPage = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-space-blue/80 via-space-blue/20 to-transparent" />
                   <div className="absolute top-4 left-4 px-3 py-1 bg-electric-cyan/90 backdrop-blur-sm rounded-full text-xs font-medium text-white capitalize">
-                    {event.category === "workshop"
-                      ? "Workshop"
-                      : event.category === "bootcamp"
-                      ? "Bootcamp"
-                      : event.category === "networking"
-                      ? "Jaringan"
-                      : "Konferensi"}
+                    {getCategoryLabel(event.category)}
                   </div>
                   <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-white/90">
                     <Users className="w-3 h-3" />
@@ -274,7 +323,10 @@ const EventsPage = () => {
                     ))}
                   </div>
 
-                  <button className="w-full group/btn relative px-4 py-3 bg-gradient-to-r from-electric-cyan to-neon-purple rounded-xl font-semibold text-white shadow-lg hover:shadow-electric-cyan/25 transition-all duration-300 hover:scale-105">
+                  <button
+                    className="w-full group/btn relative px-4 py-3 bg-gradient-to-r from-electric-cyan to-neon-purple rounded-xl font-semibold text-white shadow-lg hover:shadow-electric-cyan/25 transition-all duration-300 hover:scale-105"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <span className="flex items-center justify-center gap-2">
                       Daftar Sekarang
                       <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
@@ -304,7 +356,11 @@ const EventsPage = () => {
       {/* CTA Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto text-center">
-          <GlassCard className="p-16 scroll-animate opacity-0 translate-y-10">
+          <GlassCard
+            className={`p-16 scroll-animate opacity-0 translate-y-10 ${
+              hasAnimated ? "animate-slide-up" : ""
+            }`}
+          >
             <h2 className="text-4xl font-bold text-white mb-6">
               Ingin Mengadakan{" "}
               <span className="bg-gradient-to-r from-electric-cyan to-neon-purple bg-clip-text text-transparent">
@@ -315,7 +371,10 @@ const EventsPage = () => {
               Bagikan pengetahuan dan keahlian Anda dengan komunitas kami. Kami
               selalu mencari pembicara dan pemimpin workshop yang bersemangat.
             </p>
-            <button className="group relative px-8 py-4 bg-gradient-to-r from-hot-pink to-neon-purple rounded-full font-semibold text-white shadow-lg hover:shadow-hot-pink/40 transition-all duration-300 hover:scale-105">
+            <button
+              className="group relative px-8 py-4 bg-gradient-to-r from-hot-pink to-neon-purple rounded-full font-semibold text-white shadow-lg hover:shadow-hot-pink/40 transition-all duration-300 hover:scale-105"
+              onClick={(e) => e.stopPropagation()}
+            >
               <span className="flex items-center justify-center gap-2">
                 Ajukan Acara
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

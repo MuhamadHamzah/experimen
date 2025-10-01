@@ -25,6 +25,7 @@ interface Category {
 const GalleryPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
     const observerOptions = {
@@ -32,19 +33,25 @@ const GalleryPage = () => {
       rootMargin: "0px 0px -50px 0px",
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !hasAnimated) {
           entry.target.classList.add("animate-slide-up");
+          setHasAnimated(true);
         }
       });
-    }, observerOptions);
+    };
+
+    const observer = new IntersectionObserver(
+      handleIntersection,
+      observerOptions
+    );
 
     const elements = document.querySelectorAll(".scroll-animate");
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, []);
+  }, [hasAnimated]);
 
   const mediaItems: MediaItem[] = [
     {
@@ -151,7 +158,7 @@ const GalleryPage = () => {
       ? mediaItems
       : mediaItems.filter((item) => item.category === selectedCategory);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "short",
@@ -159,12 +166,29 @@ const GalleryPage = () => {
     });
   };
 
+  const getCategoryLabel = (category: string): string => {
+    switch (category) {
+      case "workshops":
+        return "Workshop";
+      case "events":
+        return "Acara";
+      case "community":
+        return "Komunitas";
+      default:
+        return category;
+    }
+  };
+
   return (
     <div className="min-h-screen pt-20 px-4 relative">
       {/* Header Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto text-center">
-          <div className="scroll-animate opacity-0 translate-y-10">
+          <div
+            className={`scroll-animate opacity-0 translate-y-10 ${
+              hasAnimated ? "animate-slide-up" : ""
+            }`}
+          >
             <h1 className="text-5xl lg:text-7xl font-bold mb-8 leading-tight">
               <span className="bg-gradient-to-r from-electric-cyan via-neon-purple to-hot-pink bg-clip-text text-transparent">
                 Galeri
@@ -184,7 +208,11 @@ const GalleryPage = () => {
       {/* Category Filter */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto">
-          <GlassCard className="p-8 scroll-animate opacity-0 translate-y-10">
+          <GlassCard
+            className={`p-8 scroll-animate opacity-0 translate-y-10 ${
+              hasAnimated ? "animate-slide-up" : ""
+            }`}
+          >
             <div className="flex flex-wrap gap-4 justify-center">
               {categories.map((category) => (
                 <button
@@ -211,7 +239,9 @@ const GalleryPage = () => {
             {filteredItems.map((item) => (
               <div
                 key={item.id}
-                className="group overflow-hidden cursor-pointer scroll-animate opacity-0 translate-y-10"
+                className={`group overflow-hidden cursor-pointer scroll-animate opacity-0 translate-y-10 ${
+                  hasAnimated ? "animate-slide-up" : ""
+                }`}
                 onClick={() => setSelectedMedia(item)}
               >
                 <GlassCard className="h-full">
@@ -238,11 +268,7 @@ const GalleryPage = () => {
 
                     {/* Category Badge */}
                     <div className="absolute top-4 left-4 px-3 py-1 bg-electric-cyan/90 backdrop-blur-sm rounded-full text-xs font-medium text-white capitalize">
-                      {item.category === "workshops"
-                        ? "Workshop"
-                        : item.category === "events"
-                        ? "Acara"
-                        : "Komunitas"}
+                      {getCategoryLabel(item.category)}
                     </div>
 
                     {/* Stats */}
@@ -271,7 +297,10 @@ const GalleryPage = () => {
                         <Calendar className="w-4 h-4" />
                         <span>{formatDate(item.date)}</span>
                       </div>
-                      <button className="hover:text-electric-cyan transition-colors">
+                      <button
+                        className="hover:text-electric-cyan transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Download className="w-4 h-4" />
                       </button>
                     </div>
@@ -322,11 +351,7 @@ const GalleryPage = () => {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-white/60">Kategori:</span>
                       <span className="text-electric-cyan capitalize">
-                        {selectedMedia.category === "workshops"
-                          ? "Workshop"
-                          : selectedMedia.category === "events"
-                          ? "Acara"
-                          : "Komunitas"}
+                        {getCategoryLabel(selectedMedia.category)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
@@ -342,11 +367,17 @@ const GalleryPage = () => {
                   </div>
 
                   <div className="flex gap-3">
-                    <button className="flex-1 py-3 bg-gradient-to-r from-electric-cyan to-neon-purple rounded-xl text-white font-semibold hover:scale-105 transition-transform">
+                    <button
+                      className="flex-1 py-3 bg-gradient-to-r from-electric-cyan to-neon-purple rounded-xl text-white font-semibold hover:scale-105 transition-transform"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Heart className="w-4 h-4 inline mr-2" />
                       Suka
                     </button>
-                    <button className="px-6 py-3 bg-white/10 rounded-xl text-white hover:bg-white/20 transition-colors">
+                    <button
+                      className="px-6 py-3 bg-white/10 rounded-xl text-white hover:bg-white/20 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Download className="w-4 h-4" />
                     </button>
                   </div>
@@ -360,7 +391,11 @@ const GalleryPage = () => {
       {/* CTA Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto text-center">
-          <GlassCard className="p-16 scroll-animate opacity-0 translate-y-10">
+          <GlassCard
+            className={`p-16 scroll-animate opacity-0 translate-y-10 ${
+              hasAnimated ? "animate-slide-up" : ""
+            }`}
+          >
             <h2 className="text-4xl font-bold text-white mb-6">
               Bagikan{" "}
               <span className="bg-gradient-to-r from-electric-cyan to-neon-purple bg-clip-text text-transparent">
@@ -373,7 +408,10 @@ const GalleryPage = () => {
               menampilkannya di galeri kami dan berbagi kenangan dengan
               komunitas.
             </p>
-            <button className="group relative px-8 py-4 bg-gradient-to-r from-hot-pink to-neon-purple rounded-full font-semibold text-white shadow-lg hover:shadow-hot-pink/40 transition-all duration-300 hover:scale-105">
+            <button
+              className="group relative px-8 py-4 bg-gradient-to-r from-hot-pink to-neon-purple rounded-full font-semibold text-white shadow-lg hover:shadow-hot-pink/40 transition-all duration-300 hover:scale-105"
+              onClick={(e) => e.stopPropagation()}
+            >
               <span className="flex items-center justify-center gap-2">
                 Unggah Foto
                 <Image className="w-5 h-5 group-hover:scale-110 transition-transform" />
